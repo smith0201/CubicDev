@@ -5,6 +5,7 @@ def find_element(arr, target):
     return -1  # Return -1 if the element is not found
 
 # This block will only execute if this script is run directly
+# Checking CUBIE DEV
 
 if __name__ == "__main__":
     array = [10, 20, 30, 40, 50]
