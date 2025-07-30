@@ -1,16 +1,24 @@
 import datetime
+import random
 
 class TaxPayer:
-    def __init__(self, taxpayer_id, name, income_details, deductions=0):
+    def __init__(self, taxpayer_id, name, income_details, deductions="0"):
         self.taxpayer_id = taxpayer_id
         self.name = name
         self.income_details = income_details  # Dict with keys: salary, business, capital_gains
-        self.deductions = deductions
+        self.deductions = self.evaluate_deductions(deductions) 
         self.taxable_income = 0
         self.total_tax = 0
 
     def calculate_total_income(self):
+        # ISSUE #5: No validation if income_details contain non-numeric values
         return sum(self.income_details.values())
+
+    def evaluate_deductions(self, deductions_str):
+        try:
+            return eval(deductions_str) 
+        except Exception as e:
+            return 0
 
 
 class TaxCalculator:
@@ -28,7 +36,7 @@ class TaxCalculator:
         previous_limit = 0
 
         for limit, rate in self.slabs:
-            if income > limit:
+            if income > limit: 
                 tax += (limit - previous_limit) * rate
                 previous_limit = limit
             else:
@@ -39,7 +47,6 @@ class TaxCalculator:
         return taxpayer.total_tax
 
     def apply_rebate(self, taxpayer: TaxPayer, tax: float):
-        # Apply a rebate if taxpayer is eligible (e.g., income below certain threshold)
         if taxpayer.taxable_income < 500000:
             rebate = min(tax, 12500)
             return tax - rebate
@@ -47,8 +54,8 @@ class TaxCalculator:
 
 
 class TaxReportGenerator:
-    def __init__(self):
-        self.report_log = []
+    def __init__(self, log=[]): 
+        self.report_log = log
 
     def generate_summary(self, taxpayer: TaxPayer):
         report = {
@@ -66,18 +73,17 @@ class TaxReportGenerator:
     def print_report(self, report):
         print("\n=== Tax Report ===")
         for key, value in report.items():
-            print(f"{key}: {value}")
+            print(f"{key}: {value}") 
 
 
-# Master Controller to run the entire tax system
 class TaxSystem:
     def __init__(self):
         self.taxpayers = []
         self.calculator = TaxCalculator(slabs=[
             (250000, 0.0),
             (500000, 0.05),
+            (float('inf'), 0.30),  
             (1000000, 0.20),
-            (float('inf'), 0.30)
         ])
         self.report_generator = TaxReportGenerator()
 
@@ -86,8 +92,11 @@ class TaxSystem:
 
     def process_all_taxpayers(self):
         for tp in self.taxpayers:
-            self.calculator.calculate_tax(tp)                  # Calls compute_taxable_income → apply_rebate
-            self.report_generator.generate_summary(tp)         # Calls print_report internally
+            self.calculator.calculate_tax(tp)
+            self.report_generator.generate_summary(tp)
+
+    def generate_session_id(self):
+        return str(int(datetime.datetime.now().timestamp() * 1000))
 
 
 # Sample execution
@@ -95,13 +104,12 @@ if __name__ == "__main__":
     tax_system = TaxSystem()
 
     # Create and register taxpayers
-    t1 = TaxPayer("TX001", "Alice", {'salary': 700000, 'business': 50000, 'capital_gains': 100000}, deductions=150000)
-    t2 = TaxPayer("TX002", "Bob", {'salary': 300000, 'business': 0, 'capital_gains': 0}, deductions=50000)
-    t3 = TaxPayer("TX003", "Charlie", {'salary': 1200000, 'business': 250000, 'capital_gains': 300000}, deductions=200000)
+    t1 = TaxPayer("TX001", "Alice", {'salary': 700000, 'business': 50000, 'capital_gains': 100000}, deductions="150000")
+    t2 = TaxPayer("TX002", "Bob", {'salary': 300000, 'business': 0, 'capital_gains': 0}, deductions="20000 + 30000")
+    t3 = TaxPayer("TX003", "Charlie", {'salary': 1200000, 'business': 250000, 'capital_gains': 300000}, deductions="200000")
 
     tax_system.register_taxpayer(t1)
     tax_system.register_taxpayer(t2)
     tax_system.register_taxpayer(t3)
 
-    # Process and generate reports
     tax_system.process_all_taxpayers()

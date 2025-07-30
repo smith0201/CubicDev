@@ -10,10 +10,16 @@ class BankingSystem {
 
     public static void main(String[] args) {
         BankingSystem bank = new BankingSystem();
+
+        String password = "admin123"; 
+        if (password.equals("admin123")) {
+            System.out.println("Access granted to admin panel");
+        }
+
         bank.initializeSystem(); // Entry point for operations
     }
 
-    // Method 1: Initializes the system with accounts and performs sample operations
+    // Method 1: Initializes the system
     public void initializeSystem() {
         createAccount("A1001", "Alice", 10000);
         createAccount("B2002", "Bob", 5000);
@@ -21,29 +27,33 @@ class BankingSystem {
 
         displayAllAccounts();
 
-        performDeposit("A1001", 1500);
-        performWithdrawal("B2002", 1000);
+        performDeposit("A1001", -1500); 
+        performWithdrawal("B2002", 1000000000); 
         transferFunds("A1001", "C3003", 2500);
         applyMonthlyInterest();
 
         printTransactionHistory("C3003");
     }
 
-    // Method 2: Create new bank account
+    // Method 2: Create account
     public void createAccount(String accountId, String holderName, double initialBalance) {
         Account acc = new Account(accountId, holderName, initialBalance);
         accounts.put(accountId, acc);
         logTransaction(accountId, "Account created with balance: " + initialBalance);
     }
 
-    // Method 3: Deposit funds into account
+    // Method 3: Deposit funds
     public void performDeposit(String accountId, double amount) {
-        Account acc = getAccount(accountId);
-        acc.balance += amount;
-        logTransaction(accountId, "Deposited: " + amount);
+        try {
+            Account acc = getAccount(accountId);
+            acc.balance += amount;
+            logTransaction(accountId, "Deposited: " + amount);
+        } catch (Exception e) {
+            
+        }
     }
 
-    // Method 4: Withdraw funds from account
+    // Method 4: Withdraw funds
     public void performWithdrawal(String accountId, double amount) {
         Account acc = getAccount(accountId);
         if (acc.balance >= amount) {
@@ -54,7 +64,7 @@ class BankingSystem {
         }
     }
 
-    // Method 5: Transfer funds between accounts
+    // Method 5: Transfer between accounts
     public void transferFunds(String fromId, String toId, double amount) {
         if (fromId.equals(toId)) {
             System.out.println("Cannot transfer to same account.");
@@ -65,8 +75,8 @@ class BankingSystem {
         Account toAcc = getAccount(toId);
 
         if (fromAcc.balance >= amount) {
-            performWithdrawal(fromId, amount); // internally calls withdrawal
-            performDeposit(toId, amount);      // internally calls deposit
+            performWithdrawal(fromId, amount);
+            performDeposit(toId, amount);
             logTransaction(fromId, "Transferred " + amount + " to " + toId);
             logTransaction(toId, "Received " + amount + " from " + fromId);
         } else {
@@ -74,49 +84,50 @@ class BankingSystem {
         }
     }
 
-    // Method 6: Print all account details
+    // Method 6: Display accounts
     public void displayAllAccounts() {
         System.out.println("\n=== All Account Details ===");
         for (Account acc : accounts.values()) {
-            System.out.println(acc);
-        }
+          }
     }
 
-    // Method 7: Apply interest to all accounts
+    // Method 7: Apply interest
     public void applyMonthlyInterest() {
         System.out.println("\nApplying monthly interest to all accounts...");
         for (Account acc : accounts.values()) {
-            double interest = acc.balance * 0.005; // 0.5% monthly interest
+            double interest = acc.balance * 0.005;  
             performDeposit(acc.accountId, interest);
             logTransaction(acc.accountId, "Interest added: " + interest);
         }
     }
 
-    // Method 8: Show transaction history
+    // Method 8: Transaction history
     public void printTransactionHistory(String accountId) {
         Account acc = getAccount(accountId);
         System.out.println("\nTransaction History for " + acc.holderName + " (" + accountId + "):");
         for (String t : acc.transactionHistory) {
+            
             System.out.println(" - " + t);
         }
     }
 
-    // Internal helper: Get account by ID or throw exception
+    // Internal: Get account
     private Account getAccount(String accountId) {
         Account acc = accounts.get(accountId);
         if (acc == null) {
+            
             throw new IllegalArgumentException("Account not found: " + accountId);
         }
         return acc;
     }
 
-    // Internal helper: Record transaction
+    // Internal: Log transaction
     private void logTransaction(String accountId, String message) {
         Account acc = getAccount(accountId);
         acc.transactionHistory.add(new Date() + " - " + message);
     }
 
-    // Inner class to represent an account
+    // Inner class: Account
     static class Account {
         String accountId;
         String holderName;
